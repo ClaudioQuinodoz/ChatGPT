@@ -1,8 +1,11 @@
-
 import string
 import re
 import spacy
+import openai
+import streamlit as st
+
 nlp = spacy.load('es_core_news_sm')
+openai.api_key = "API_KEY"
 
 def limpiar_texto(texto):
     """
@@ -15,8 +18,6 @@ def limpiar_texto(texto):
     doc = nlp(texto)
     palabras = [token.lemma_ for token in doc if not token.is_stop]
     return ' '.join(palabras)
-import openai
-openai.api_key = "API_KEY"
 
 def entrenar_modelo(texto_entrenamiento):
     """
@@ -29,6 +30,7 @@ def entrenar_modelo(texto_entrenamiento):
     completions = openai.Completion.create(engine="text-davinci-002", prompt=prompt, max_tokens=1024)
     respuesta = completions.choices[0].text.strip()
     return respuesta
+
 def generar_respuesta(pregunta, contexto=None):
     """
     Genera una respuesta a partir de una pregunta y un contexto (opcional).
@@ -39,17 +41,6 @@ def generar_respuesta(pregunta, contexto=None):
     completions = openai.Completion.create(engine="text-davinci-002", prompt=prompt, max_tokens=1024)
     respuesta = completions.choices[0].text.strip()
     return respuesta
-def generar_respuesta(pregunta, contexto=None):
-    """
-    Genera una respuesta a partir de una pregunta y un contexto (opcional).
-    """
-    prompt = f"Pregunta: {pregunta}\n"
-    if contexto:
-        prompt += f"Contexto: {contexto}\n"
-    completions = openai.Completion.create(engine="text-davinci-002", prompt=prompt, max_tokens=1024)
-    respuesta = completions.choices[0].text.strip()
-    return respuesta
-import streamlit as st
 
 def interfaz_usuario():
     """
@@ -59,5 +50,10 @@ def interfaz_usuario():
     st.write("¡Hola! Soy Cacho, tu ayudante personal. ¿En qué puedo ayudarte?")
     pregunta = st.text_input("Hazme una pregunta...")
     if pregunta:
+        pregunta = limpiar_texto(pregunta)
         respuesta = generar_respuesta(pregunta)
         st.write("Cacho: " + respuesta)
+
+if __name__ == '__main__':
+    interfaz_usuario()
+
