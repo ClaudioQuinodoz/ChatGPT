@@ -1,1 +1,63 @@
 
+import string
+import re
+import spacy
+nlp = spacy.load('es_core_news_sm')
+
+def limpiar_texto(texto):
+    """
+    Limpia el texto eliminando caracteres especiales, dígitos y stopwords, y lematiza las palabras.
+    """
+    texto = texto.lower()
+    texto = re.sub('\[.*?\]', '', texto)  # Eliminar corchetes y su contenido
+    texto = re.sub('[%s]' % re.escape(string.punctuation), '', texto)  # Eliminar puntuación
+    texto = re.sub('\w*\d\w*', '', texto)  # Eliminar dígitos
+    doc = nlp(texto)
+    palabras = [token.lemma_ for token in doc if not token.is_stop]
+    return ' '.join(palabras)
+import openai
+openai.api_key = "API_KEY"
+
+def entrenar_modelo(texto_entrenamiento):
+    """
+    Entrena el modelo GPT-3.5 con el texto de entrenamiento proporcionado.
+    """
+    prompt = (f"Trainer: Por favor, entrena el modelo GPT-3.5 con el siguiente texto:\n"
+              f"{texto_entrenamiento}\n"
+              f"Modelo: Comenzando el entrenamiento...\n"
+              f"Modelo: Entrenamiento completado exitosamente.")
+    completions = openai.Completion.create(engine="text-davinci-002", prompt=prompt, max_tokens=1024)
+    respuesta = completions.choices[0].text.strip()
+    return respuesta
+def generar_respuesta(pregunta, contexto=None):
+    """
+    Genera una respuesta a partir de una pregunta y un contexto (opcional).
+    """
+    prompt = f"Pregunta: {pregunta}\n"
+    if contexto:
+        prompt += f"Contexto: {contexto}\n"
+    completions = openai.Completion.create(engine="text-davinci-002", prompt=prompt, max_tokens=1024)
+    respuesta = completions.choices[0].text.strip()
+    return respuesta
+def generar_respuesta(pregunta, contexto=None):
+    """
+    Genera una respuesta a partir de una pregunta y un contexto (opcional).
+    """
+    prompt = f"Pregunta: {pregunta}\n"
+    if contexto:
+        prompt += f"Contexto: {contexto}\n"
+    completions = openai.Completion.create(engine="text-davinci-002", prompt=prompt, max_tokens=1024)
+    respuesta = completions.choices[0].text.strip()
+    return respuesta
+import streamlit as st
+
+def interfaz_usuario():
+    """
+    Interfaz de usuario con Streamlit.
+    """
+    st.title("Ayudante personal - Cacho")
+    st.write("¡Hola! Soy Cacho, tu ayudante personal. ¿En qué puedo ayudarte?")
+    pregunta = st.text_input("Hazme una pregunta...")
+    if pregunta:
+        respuesta = generar_respuesta(pregunta)
+        st.write("Cacho: " + respuesta)
